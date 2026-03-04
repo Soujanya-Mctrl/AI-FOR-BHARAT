@@ -1,7 +1,9 @@
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
 // @ts-ignore
+import { fromNodeHeaders } from "better-auth/node";
 import jwt from "jsonwebtoken";
-import userModel from "../models/user.model";
+import { auth } from "../auth.js";
+import userModel from "../models/user.model.js";
 
 // Extend Express Request to include user
 declare global {
@@ -14,44 +16,38 @@ declare global {
 
 const authMiddleware = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        console.log("Auth Middleware Hit - Path:", req.path);
-        console.log("Cookies:", req.cookies);
-        console.log("Auth Header:", req.headers.authorization);
+        // 1. Try Better Auth Session First (Session-based, common for social login)
+        const session = await auth.api.getSession({
+            headers: fromNodeHeaders(req.headers)
+        });
 
+        if (session) {
+            // Find the mongoose user to maintain compatibility with existing controllers
+            const user = await userModel.findById(session.user.id);
+            if (user) {
+                req.user = user;
+                return next();
+            }
+        }
+
+        // 2. Try JWT Token (Old system, useful for API keys or legacy login)
         const token = req.cookies?.token || req.headers.authorization?.split(" ")[1];
 
-        if (!token) {
-            console.log("No token found");
-            res.status(401).json({
-                message: "Unauthorized user"
-            });
-            return;
+        if (token) {
+            const decoded: any = jwt.verify(token, process.env.JWT_SECRET as string);
+            const user = await userModel.findById(decoded.id);
+
+            if (user) {
+                req.user = user;
+                return next();
+            }
         }
 
-        console.log("Decoding token...");
-        const decoded: any = jwt.verify(token, process.env.JWT_SECRET as string);
-        console.log("Decoded Token:", decoded);
-
-        const user = await userModel.findById(decoded.id);
-
-        if (!user) {
-            console.log("User not found in DB with ID:", decoded.id);
-            res.status(401).json({
-                message: "Unauthorized user"
-            });
-            return;
-        }
-
-        req.user = user;
-        console.log("Auth successful for user:", user.email);
-
-        next();
+        res.status(401).json({ message: "Unauthorized user" });
 
     } catch (err: any) {
         console.error("Auth Middleware Error:", err.message);
-        res.status(401).json({
-            message: "Unauthorized user"
-        });
+        res.status(401).json({ message: "Unauthorized user" });
     }
 };
 

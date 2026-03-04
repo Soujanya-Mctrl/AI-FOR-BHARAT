@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import userModel from '../models/user.model';
+import userModel from '../models/user.model.js';
 
 export const getLeaderboard = async (req: Request, res: Response): Promise<void> => {
     try {

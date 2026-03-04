@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 // @ts-ignore
-import reportModel from '../models/report.model';
+import reportModel from '../models/report.model.js';
 // @ts-ignore
-import userModel from '../models/user.model';
+import userModel from '../models/user.model.js';
 // @ts-ignore
-import { generateTypeWaste } from '../service/ai.service';
+import { generateTypeWaste } from '../service/ai.service.js';
 
 interface MulterRequest extends Request {
     file?: Express.Multer.File;

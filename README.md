@@ -92,14 +92,16 @@ Currently, the frontend MVP is structurally complete, and the core backend is bu
 | **@shopify/flash-list** | Performant scrollable lists |
 | **Cloudinary** | Hosting for segregation training videos & tutorial guides |
 
-### Backend
+### Backend (ESM)
 
 | Technology | Purpose |
 |---|---|
 | **Express 5** | REST API framework |
+| **Better Auth** | Modern authentication framework with Dashboard plugin |
 | **MongoDB + Mongoose** | Database & ODM |
-| **JWT + bcryptjs** | Authentication & password hashing |
 | **Google Generative AI** | Waste type classification via Gemini |
+| **tsx** | Fast TypeScript execution for ESM |
+| **ngrok** | Secure tunneling for Better Auth Dashboard & mobile testing |
 | **Multer** | Image upload handling |
 | **TypeScript** | Type safety |
 
@@ -182,9 +184,10 @@ EcoWaste/
 
 ## ✅ Prerequisites
 
-- **Node.js** ≥ 18
+- **Node.js** ≥ 20 (Required for ESM features)
 - **npm** ≥ 9
 - **MongoDB** (local or [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) free tier)
+- **ngrok** (Required for local development with Better Auth Dashboard)
 - **Expo Go** app on your phone ([Android](https://play.google.com/store/apps/details?id=host.exp.exponent) / [iOS](https://apps.apple.com/app/expo-go/id982107779))
 - **Google AI API Key** for waste classification ([Get one here](https://aistudio.google.com/apikey))
 
@@ -203,13 +206,15 @@ npm install
 
 # Create environment file
 cp .env.example .env
-# Edit .env with your MongoDB URI, JWT secret, and Google AI API key
+
+# Generate secret for BETTER_AUTH_SECRET
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 # Start development server
 npm run dev
 ```
 
-The backend starts at `http://localhost:4000`.
+The backend starts at `http://localhost:4000`. To access the Better Auth Dashboard, run `npx ngrok http 4000` and use the provided URL for `BETTER_AUTH_URL`.
 
 ### 2. Mobile App (Expo)
 
@@ -222,10 +227,10 @@ npm install
 
 # Create environment file
 cp .env.example .env
-# Edit .env — set EXPO_PUBLIC_API_URL to your backend URL
+# Edit .env — set EXPO_PUBLIC_API_URL to your backend URL (or ngrok URL for mobile testing)
 
 # Start Expo dev server
-npx expo start
+npm start
 ```
 
 Then:
@@ -233,6 +238,23 @@ Then:
 - **Android Emulator**: Press `a`
 - **iOS Simulator**: Press `i`
 - **Web**: Press `w`
+
+### 3. Ngrok Setup (Required for Development)
+
+To connect the **Better Auth Dashboard** and test the app on a **Physical Device**, you must expose your local server using ngrok.
+
+1.  **Install ngrok**: Follow the [official installation guide](https://dashboard.ngrok.com/get-started/setup).
+2.  **Authenticate**: Run `ngrok config add-authtoken YOUR_TOKEN`.
+3.  **Start Tunnel**:
+    ```bash
+    # Expose the backend port (4000)
+    npx ngrok http 4000
+    ```
+4.  **Update Config**:
+    *   Copy the `https://...ngrok-free.dev` URL.
+    *   Set `BETTER_AUTH_URL` in `Backend/.env` to this URL.
+    *   Set `EXPO_PUBLIC_API_URL` in `/.env` (root) to this URL.
+5.  **Restart Servers**: Restart both the backend and frontend for the changes to take effect.
 
 ---
 
@@ -252,8 +274,13 @@ Then:
 |---|---|---|
 | `PORT` | Server port | `4000` |
 | `MONGODB_URI` | MongoDB connection string | `mongodb+srv://...` |
-| `JWT_SECRET` | Secret for signing JWTs | `random-secure-string` |
-| `GOOGLE_AI_API_KEY` | Gemini API key for waste classification | `AIza...` |
+| `BETTER_AUTH_SECRET` | Secret for Better Auth | `32-byte-hex-string` |
+| `BETTER_AUTH_URL` | Public URL for Better Auth | `https://your-ngrok-url.io` |
+| `BETTER_AUTH_API_KEY` | Dashboard connection key | `ba_...` |
+| `GOOGLE_AI_API_KEY` | Gemini API key | `AIza...` |
+| `GOOGLE_APPLICATION_CREDENTIALS` | Path to service account JSON | `./service-account.json` |
+| `GOOGLE_CLIENT_ID` | OAuth Client ID | `...apps.googleusercontent.com` |
+| `GOOGLE_CLIENT_SECRET` | OAuth Client Secret | `GOCSPX-...` |
 | `CORS_ORIGIN` | Allowed CORS origin | `http://localhost:3000` |
 
 ---
@@ -274,8 +301,8 @@ Then:
 
 | Script | Command | Description |
 |---|---|---|
-| Dev | `npm run dev` | Start with nodemon (auto-reload) |
-| Start | `npm start` | Start with ts-node |
+| Dev | `npm run dev` | Start with tsx watch (auto-reload) |
+| Start | `npm start` | Start with tsx (no watch) |
 | Build | `npm run build` | Compile TypeScript |
 
 ---
