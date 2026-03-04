@@ -1,25 +1,26 @@
+// Master router — mounts all route groups under /api/v1
 import { Router } from 'express';
-export const router = Router();
 
-// Routes will be connected here
-import authRoutes from './auth.routes';
-import userRoutes from './user.routes';
-import reportRoutes from './report.routes';
-import pickupRoutes from './pickup.routes';
-import verificationRoutes from './verification.routes';
-import pointsRoutes from './points.routes';
+import adminRoutes from './admin.routes';
+import kabadiwallaRoutes from './kabadiwalla.routes';
 import municipalityRoutes from './municipality.routes';
-import carbonRoutes from './carbon.routes';
-import facilitiesRoutes from './facilities.routes';
+import notificationRoutes from './notification.routes';
+import pickupRoutes from './pickup.routes';
+import reportRoutes from './report.routes';
+import trustRoutes from './trust.routes';
+import userRoutes from './user.routes';
+import verificationRoutes from './verification.routes';
 
-router.use('/auth', authRoutes);
+const router = Router();
+
 router.use('/users', userRoutes);
 router.use('/reports', reportRoutes);
 router.use('/pickups', pickupRoutes);
 router.use('/verification', verificationRoutes);
-router.use('/points', pointsRoutes);
+router.use('/trust', trustRoutes);
+router.use('/kabadiwalla', kabadiwallaRoutes);
 router.use('/municipality', municipalityRoutes);
-router.use('/carbon', carbonRoutes);
-router.use('/facilities', facilitiesRoutes);
+router.use('/notifications', notificationRoutes);
+router.use('/admin', adminRoutes);
 
 export default router;

@@ -1,41 +1,41 @@
-import express, { Request, Response, NextFunction } from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
+// Express app setup: middleware chain, route mounting, error handler
 import cookieParser from 'cookie-parser';
-import mongoSanitize from 'express-mongo-sanitize';
-import xss from 'xss-clean';
-import { apiLimiter } from './middlewares/rateLimiter.middleware';
-import { errorHandler } from './middlewares/error.middleware';
-import { AppError } from './utils/AppError';
+import cors from 'cors';
+import express, { NextFunction, Request, Response } from 'express';
+import { generalLimiter } from './middleware/rateLimiter';
+import { sanitizeMongoDB, sanitizeXSS } from './middleware/sanitize';
 import routes from './routes';
+import { ApiError } from './utils/ApiError';
 
-dotenv.config();
+import { toNodeHandler } from "better-auth/node";
+import { auth } from "./lib/auth";
 
 const app = express();
+
+// Better Auth Handler
+app.all("/api/v1/auth/*", toNodeHandler(auth));
 
 // Body parser
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
-// Cookie parser (required for req.cookies)
+// Cookie parser
 app.use(cookieParser());
 
-// Enable CORS
+// CORS
 app.use(cors({
     origin: process.env.CORS_ORIGIN || '*',
     credentials: true
 }));
 
-// Data sanitization against NoSQL query injection
-app.use(mongoSanitize());
+// Data sanitization
+app.use(sanitizeMongoDB);
+app.use(sanitizeXSS);
 
-// Data sanitization against XSS
-app.use(xss());
+// Rate limiting
+app.use('/api', generalLimiter);
 
-// Apply rate limiting to all requests (general)
-app.use('/api', apiLimiter);
-
-// Default Route
+// Default route
 app.get('/', (req: Request, res: Response) => {
     res.status(200).json({
         success: true,
@@ -48,10 +48,24 @@ app.use('/api/v1', routes);
 
 // Handle undefined routes
 app.all('*', (req: Request, res: Response, next: NextFunction) => {
-    next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+    next(new ApiError(404, `Can't find ${req.originalUrl} on this server!`));
 });
 
-// Global Error Handler
-app.use(errorHandler);
+// Global error handler
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    const statusCode = err.statusCode || 500;
+    const message = err.message || 'Internal Server Error';
+
+    res.status(statusCode).json({
+        success: false,
+        error: {
+            code: statusCode,
+            message,
+            details: err.details || undefined
+        },
+        requestId: require('crypto').randomUUID(),
+        timestamp: new Date().toISOString()
+    });
+});
 
 export default app;

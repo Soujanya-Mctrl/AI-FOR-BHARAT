@@ -1,15 +1,14 @@
-import { apiKeyClient } from "@better-auth/api-key/client";
 import { expoClient } from "@better-auth/expo/client";
 import { createAuthClient } from "better-auth/react";
 import * as SecureStore from "expo-secure-store";
 
 export const authClient = createAuthClient({
-    baseURL: process.env.EXPO_PUBLIC_API_URL || "http://localhost:4000",
+    baseURL: process.env.EXPO_PUBLIC_API_URL || "http://localhost:5000",
+    basePath: "/api/v1/auth",
     plugins: [
         expoClient({
             scheme: "ecowaste",
             storage: SecureStore,
         }),
-        apiKeyClient(),
     ],
 });

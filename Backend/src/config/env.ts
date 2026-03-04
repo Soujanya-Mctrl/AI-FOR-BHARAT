@@ -1,24 +1,54 @@
 import dotenv from 'dotenv';
-dotenv.config();
+import path from 'path';
+import { z } from 'zod';
 
-export const config = {
-    port: process.env.PORT || 5000,
-    mongodbUri: process.env.MONGODB_URI || 'mongodb://localhost:27017/ecowaste',
-    jwtSecret: process.env.JWT_SECRET || 'fallback-secret',
-    jwtExpiresIn: process.env.JWT_EXPIRES_IN || '15m',
-    jwtRefreshSecret: process.env.JWT_REFRESH_SECRET || 'fallback-refresh-secret',
-    jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
-    clientUrl: process.env.CLIENT_URL || 'http://localhost:3000',
-    cloudinary: {
-        cloudName: process.env.CLOUDINARY_CLOUD_NAME,
-        apiKey: process.env.CLOUDINARY_API_KEY,
-        apiSecret: process.env.CLOUDINARY_API_SECRET
-    },
-    email: {
-        host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-        port: Number(process.env.EMAIL_PORT) || 587,
-        user: process.env.EMAIL_USER || '',
-        pass: process.env.EMAIL_PASS || '',
-    }
-};
+// Load initial basic env for resolution (we usually don't dictate the exact file here since node handles .env root by default,
+// but assuming .env root loading based on process.cwd)
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
+const envSchema = z.object({
+    PORT: z.string().default('5000'),
+    NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+
+    CLOUDINARY_CLOUD_NAME: z.string(),
+    CLOUDINARY_API_KEY: z.string(),
+    CLOUDINARY_API_SECRET: z.string(),
+    CLOUDINARY_FOLDER: z.string().default('ecowaste'),
+
+    MONGO_URI: z.string().url(),
+    BETTER_AUTH_SECRET: z.string(),
+    BETTER_AUTH_URL: z.string().url(),
+    GOOGLE_CLIENT_ID: z.string(),
+    GOOGLE_CLIENT_SECRET: z.string(),
+
+    JWT_SECRET: z.string(),
+    JWT_EXPIRES_IN: z.string().default('7d'),
+
+    MAIL_HOST: z.string(),
+    MAIL_PORT: z.string(),
+    MAIL_USER: z.string(),
+    MAIL_PASS: z.string(),
+
+    FRONTEND_URL: z.string().url(),
+    CORS_ORIGIN: z.string().url(),
+
+    GEMINI_API_KEY: z.string(),
+
+    EXPOTOKEN: z.string().optional(),
+
+    ADMIN_EMAIL: z.string().email(),
+    ADMIN_PASSWORD: z.string(),
+
+    RAZORPAY_KEY_ID: z.string(),
+    RAZORPAY_KEY_SECRET: z.string(),
+    RAZORPAY_WEBHOOK_SECRET: z.string().optional()
+});
+
+const _env = envSchema.safeParse(process.env);
+
+if (!_env.success) {
+    console.error('❌ Invalid environment variables:', _env.error.format());
+    throw new Error('Invalid environment variables');
+}
+
+export const env = _env.data;

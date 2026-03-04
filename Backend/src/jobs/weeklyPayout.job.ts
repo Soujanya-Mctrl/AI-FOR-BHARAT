@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import userModel from '../models/user.model.js';
+import { UserModel as userModel } from '../models/User.model';
 
 export const startWeeklyPayoutJob = () => {
     // Run at 9 AM every Friday
@@ -7,7 +7,7 @@ export const startWeeklyPayoutJob = () => {
         console.log('[Job:WeeklyPayout] Starting weekly payouts...');
         try {
             // Find all active kabadiwallas
-            const kabadiwallas = await userModel.find({ role: 'green_champion' });
+            const kabadiwallas = await userModel.find({ role: 'kabadiwalla' });
 
             for (const kb of kabadiwallas) {
                 // await paymentService.weeklyPayout(kb._id.toString());
