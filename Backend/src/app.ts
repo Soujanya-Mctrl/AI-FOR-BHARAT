@@ -1,32 +1,57 @@
-import express from 'express';
-// @ts-ignore
-import cookieParser from "cookie-parser";
-import facilitiesRouter from "./routes/facilities.routes.js";
-import pickupRouter from "./routes/pickup.routes.js";
-import reportRouter from "./routes/report.routes.js";
-import rewardsRouter from "./routes/rewards.routes.js";
-import userRouter from "./routes/user.routes.js";
-// @ts-ignore
-import cors from "cors";
+import express, { Request, Response, NextFunction } from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
+import mongoSanitize from 'express-mongo-sanitize';
+import xss from 'xss-clean';
+import { apiLimiter } from './middlewares/rateLimiter.middleware';
+import { errorHandler } from './middlewares/error.middleware';
+import { AppError } from './utils/AppError';
+import routes from './routes';
+
+dotenv.config();
 
 const app = express();
 
-app.use(cors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:3000", // your frontend URL
-    credentials: true
-}));
-app.use(express.json());
+// Body parser
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+
+// Cookie parser (required for req.cookies)
 app.use(cookieParser());
 
-app.use('/', userRouter);
-app.use('/report', reportRouter);
-app.use('/facilities', facilitiesRouter);
-app.use('/api', rewardsRouter);
-app.use('/api/pickups', pickupRouter);
+// Enable CORS
+app.use(cors({
+    origin: process.env.CORS_ORIGIN || '*',
+    credentials: true
+}));
 
-import { toNodeHandler } from 'better-auth/node';
-import { auth } from './auth.js';
+// Data sanitization against NoSQL query injection
+app.use(mongoSanitize());
 
-app.all("/api/auth/*splat", toNodeHandler(auth));
+// Data sanitization against XSS
+app.use(xss());
+
+// Apply rate limiting to all requests (general)
+app.use('/api', apiLimiter);
+
+// Default Route
+app.get('/', (req: Request, res: Response) => {
+    res.status(200).json({
+        success: true,
+        message: 'Welcome to EcoWaste Management System API'
+    });
+});
+
+// API Routes
+app.use('/api/v1', routes);
+
+// Handle undefined routes
+app.all('*', (req: Request, res: Response, next: NextFunction) => {
+    next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+});
+
+// Global Error Handler
+app.use(errorHandler);
 
 export default app;
