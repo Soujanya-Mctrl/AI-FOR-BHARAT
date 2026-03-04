@@ -2,9 +2,7 @@
 
 **Fixing India's broken waste accountability loop — one GPS-verified pickup at a time.**
 
-India generates 62 million tonnes of waste per year. Only 11.9 million tonnes gets processed correctly. The problem isn't awareness — it's accountability. Citizens report, nothing happens, they stop. Kabadiwallas have no reliable income or routing. Municipalities have no real-time data.
-
-EcoWaste closes this loop with a **dual-GPS verification system**: citizens request pickups, kabadiwallas confirm quality on-site, and both GPS signals are cross-referenced automatically. No human review layer. Correct segregation earns cashback. Fraud is statistically detectable.
+EcoWaste is a two-sided marketplace connecting citizens to kabadiwallas. Citizens segregate waste correctly, photograph it, and schedule a pickup. Kabadiwallas confirm the pickup on-site with GPS auto-captured. The cross-reference engine compares both GPS streams, checks dwell time, and validates rating patterns to generate a trust score automatically. Above 70 — payment releases. Below 70 — flagged for the anomaly agent. Four Gemini agents handle coaching, fraud investigation, route optimisation, and municipality briefings. Municipalities get a compliance dashboard with verified ward-level data. The only human touchpoint is an admin reviewing high-confidence suspension cases. Everything else is automated.
 
 ---
 

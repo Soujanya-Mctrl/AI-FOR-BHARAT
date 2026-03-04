@@ -15,7 +15,7 @@ const envSchema = z.object({
     CLOUDINARY_API_SECRET: z.string(),
     CLOUDINARY_FOLDER: z.string().default('ecowaste'),
 
-    MONGO_URI: z.string().url(),
+    MONGO_URI: z.string(),
     BETTER_AUTH_SECRET: z.string(),
     BETTER_AUTH_URL: z.string().url(),
     GOOGLE_CLIENT_ID: z.string(),

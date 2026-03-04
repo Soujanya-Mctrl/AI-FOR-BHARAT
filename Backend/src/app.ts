@@ -13,7 +13,7 @@ import { auth } from "./lib/auth";
 const app = express();
 
 // Better Auth Handler
-app.all("/api/v1/auth/*", toNodeHandler(auth));
+app.all("/api/v1/auth/*path", toNodeHandler(auth));
 
 // Body parser
 app.use(express.json({ limit: '10kb' }));
@@ -47,7 +47,7 @@ app.get('/', (req: Request, res: Response) => {
 app.use('/api/v1', routes);
 
 // Handle undefined routes
-app.all('*', (req: Request, res: Response, next: NextFunction) => {
+app.all('*path', (req: Request, res: Response, next: NextFunction) => {
     next(new ApiError(404, `Can't find ${req.originalUrl} on this server!`));
 });
 
