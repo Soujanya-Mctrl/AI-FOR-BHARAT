@@ -1,47 +1,19 @@
-// notification.service.ts
+import { UserModel } from '../models/User.model';
 
-// Setup: import { Expo } from 'expo-server-sdk'
-// let expo = new Expo();
+export class NotificationService {
+    /**
+     * Sends a push notification to a specific user via Expo or Firebase.
+     * Used by agents and other services.
+     */
+    static async sendPush(userId: string, title: string, body: string, data?: any): Promise<boolean> {
+        const user = await UserModel.findById(userId);
+        if (!user) return false;
 
-export const notificationService = {
-    pickupRequestNearby: async (kabadiwalaIds: string[], pickupData: any) => {
-        console.log(`[NotificationService] Sending pickupRequestNearby to ${kabadiwalaIds.length} kabadiwalas`);
-        // Example: "New pickup 400m away in Koregaon Park — ₹12 available"
-    },
+        // In a real application, you'd extract the expoPushToken from the user model 
+        // and send the request to the Expo backend here.
+        console.log(`[PUSH -> User ${userId}]: ${title} - ${body}`);
 
-    pickupAccepted: async (citizenId: string, kabadiwalaName: string, eta: string) => {
-        console.log(`[NotificationService] Sending pickupAccepted to ${citizenId}: ${kabadiwalaName} accepted, ETA ${eta}`);
-    },
-
-    pickupConfirmed: async (citizenId: string, score: number) => {
-        console.log(`[NotificationService] Sending pickupConfirmed to ${citizenId}`);
-    },
-
-    paymentReleased: async (kabadiwalaId: string, amount: number) => {
-        console.log(`[NotificationService] Sending paymentReleased to ${kabadiwalaId}: ₹${amount}`);
-    },
-
-    cashbackEarned: async (citizenId: string, amount: number) => {
-        console.log(`[NotificationService] Sending cashbackEarned to ${citizenId}: ₹${amount}`);
-    },
-
-    streakMilestone: async (citizenId: string, streakCount: number) => {
-        console.log(`[NotificationService] Sending streakMilestone to ${citizenId}: ${streakCount} days`);
-    },
-
-    scoreImproved: async (userId: string, newScore: number, oldScore: number) => {
-        console.log(`[NotificationService] Sending scoreImproved to ${userId}: ${oldScore} -> ${newScore}`);
-    },
-
-    anomalyWarning: async (userId: string) => {
-        console.log(`[NotificationService] Sending anomalyWarning to ${userId}`);
-    },
-
-    suspensionNotice: async (userId: string) => {
-        console.log(`[NotificationService] Sending suspensionNotice to ${userId}`);
-    },
-
-    adminAlert: async (adminIds: string[], flagType: string, userId: string) => {
-        console.log(`[NotificationService] Sending adminAlert for user ${userId} to ${adminIds.length} admins`);
+        // Simulate successful push
+        return true;
     }
-};
+}

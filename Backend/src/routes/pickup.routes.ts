@@ -1,35 +1,40 @@
-import express from 'express';
+import { Router } from 'express';
 import {
     acceptPickup,
+    cancelPickup,
     confirmPickup,
-    getNearbyRequests,
-    getPickupById,
-    getPickupHistory,
-    getTodayRoute,
-    requestPickup
-} from '../controller/PickupController.js';
-import authMiddleware from '../middleware/auth.middleware.js';
+    createPickup,
+    declinePickup,
+    getCitizenPickupHistory, getKabadiwallaPickupHistory,
+    getNearbyKabadiwallas,
+    getOptimizedRoute,
+    getPendingPickups,
+    getPickup,
+    ratePickup
+} from '../controller/pickup.controller';
+import { authenticate } from '../middleware/authenticate';
+import { authorize } from '../middleware/authorize';
+import { processImageUpload, uploadImageMiddleware } from '../middleware/uploadImage';
 
-const router = express.Router();
+const router = Router();
+router.use(authenticate);
 
-// All pickup routes require authentication
-router.use(authMiddleware);
+// Citizen
+router.post('/', authorize('citizen'), createPickup);
+router.get('/nearby-kabadiwallas', authorize('citizen'), getNearbyKabadiwallas);
+router.get('/history/citizen', authorize('citizen'), getCitizenPickupHistory);
+router.patch('/:id/cancel', authorize('citizen', 'admin'), cancelPickup);
+router.post('/:id/rate', authorize('citizen'), ratePickup);
 
-// Citizen routes
-router.post('/request', requestPickup);
-router.post('/rate/:id', (req, res) => {
-    // Placeholder for citizen rating logic if separate from confirm
-    res.status(200).json({ success: true, message: 'Rating submitted' });
-});
+// Kabadiwalla
+router.get('/kabadiwalla/pending', authorize('kabadiwalla'), getPendingPickups);
+router.get('/history/kabadiwalla', authorize('kabadiwalla'), getKabadiwallaPickupHistory);
+router.get('/kabadiwalla/route', authorize('kabadiwalla'), getOptimizedRoute);
+router.patch('/:id/accept', authorize('kabadiwalla'), acceptPickup);
+router.patch('/:id/decline', authorize('kabadiwalla'), declinePickup);
+router.post('/:id/confirm', authorize('kabadiwalla'), uploadImageMiddleware, processImageUpload, confirmPickup);
 
-// Kabadiwalla routes
-router.patch('/accept/:id', acceptPickup);
-router.post('/confirm/:id', confirmPickup);
-router.get('/nearby', getNearbyRequests);
-router.get('/route/today', getTodayRoute);
-
-// Shared routes
-router.get('/history', getPickupHistory);
-router.get('/:id', getPickupById);
+// Shared
+router.get('/:id', getPickup);
 
 export default router;

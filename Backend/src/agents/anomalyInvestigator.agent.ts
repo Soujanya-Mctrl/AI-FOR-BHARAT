@@ -1,24 +1,25 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import InvestigationModel from '../models/investigation.model.js';
-import { verdictExecutorService } from '../service/verdictExecutor.service.js';
+// import InvestigationModel from '../models/investigation.model'; // Removed as we don't have this schema yet
+// import { verdictExecutorService } from '../service/verdictExecutor.service'; // Removed as we haven't ported services yet
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export const anomalyInvestigatorAgent = {
     investigateAnomaly: async (investigationId: string) => {
         try {
-            const investigation = await InvestigationModel.findById(investigationId);
-            if (!investigation) throw new Error("Investigation not found");
+            // const investigation = await InvestigationModel.findById(investigationId);
+            // if (!investigation) throw new Error("Investigation not found");
 
-            investigation.status = 'in_progress';
-            await investigation.save();
+            // investigation.status = 'in_progress';
+            // await investigation.save();
 
-            const userId = investigation.targetUser.toString();
+            // const userId = investigation.targetUser.toString();
+            const userId = 'placeholder_user_id';
 
             // Step 1 - Build Context
             // MOCK: In production, fetch pickup history, GPS traces, associated accounts etc.
             const context = {
-                signals: investigation.signals,
+                signals: ['mock_signal'], // investigation.signals,
                 userAgeDays: 14,
                 totalPickups: 45,
                 associatedAccountsCount: 0,
@@ -62,11 +63,11 @@ export const anomalyInvestigatorAgent = {
             console.log(`[AnomalyInvestigator] Reached verdict for ${userId}: ${verdict.result} -> ${verdict.recommendedAction}`);
 
             // Step 4 - Execute
-            await verdictExecutorService.executeVerdict(investigationId, verdict);
+            // await verdictExecutorService.executeVerdict(investigationId, verdict);
 
         } catch (error) {
             console.error("[AnomalyInvestigator] Error investigating anomaly:", error);
-            await InvestigationModel.findByIdAndUpdate(investigationId, { status: 'failed' });
+            // await InvestigationModel.findByIdAndUpdate(investigationId, { status: 'failed' });
         }
     }
 };

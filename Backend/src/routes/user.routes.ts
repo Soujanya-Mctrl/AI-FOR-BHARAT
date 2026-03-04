@@ -1,12 +1,12 @@
-import express from "express";
-import { loginController, logout, registerController, verifyController } from "../controller/auth.controller.js";
-import authMiddleware from "../middleware/auth.middleware.js";
+import { Router } from 'express';
+import { getPickupHistory, getProfile, updateProfile } from '../controller/user.controller';
+import { authenticate } from '../middleware/authenticate';
 
-const router = express.Router();
+const router = Router();
+router.use(authenticate);
 
-router.post('/register', registerController);
-router.post('/login', loginController);
-router.post('/logout', logout);
-router.get('/verify', authMiddleware, verifyController);
+router.get('/profile', getProfile);
+router.put('/profile', updateProfile);
+router.get('/pickup-history', getPickupHistory);
 
 export default router;

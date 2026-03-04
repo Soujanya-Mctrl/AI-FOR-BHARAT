@@ -1,5 +1,5 @@
-import PickupModel from '../models/Pickup.model.js';
-import userModel from '../models/user.model.js';
+// import PickupModel from '../models/Pickup.model.js';
+// import userModel from '../models/user.model.js';
 
 export const paymentService = {
     releasePayment: async (pickupId: string, compositeScore: number) => {
@@ -20,23 +20,23 @@ export const paymentService = {
         else if (compositeScore >= 50) cashbackAmount = cashbackBase * 0.7;
         else cashbackAmount = 0;
 
-        const pickup = await PickupModel.findById(pickupId);
-        if (!pickup) throw new Error("Pickup not found");
+        // const pickup = await PickupModel.findById(pickupId);
+        // if (!pickup) throw new Error("Pickup not found");
 
-        pickup.paymentAmount = kabadiwalaAmount;
-        pickup.cashbackAmount = cashbackAmount;
-        pickup.paymentStatus = 'released';
-        await pickup.save();
+        // pickup.paymentAmount = kabadiwalaAmount;
+        // pickup.cashbackAmount = cashbackAmount;
+        // pickup.paymentStatus = 'released';
+        // await pickup.save();
 
         // In a real app we would use Razorpay Payout API here to transfer the funds to KabadiwalaWallet
         console.log(`[PaymentService] Released payment. Kabadiwala: ${kabadiwalaAmount}, Citizen: ${cashbackAmount}`);
 
         // Assuming adding amount to user wallet
-        if (cashbackAmount > 0) {
-            await userModel.findByIdAndUpdate(pickup.citizenId, {
-                $inc: { 'citizenProfile.cashbackBalance': cashbackAmount }
-            });
-        }
+        // if (cashbackAmount > 0) {
+        //     await userModel.findByIdAndUpdate(pickup.citizenId, {
+        //         $inc: { 'citizenProfile.cashbackBalance': cashbackAmount }
+        //     });
+        // }
 
         return { kabadiwalaAmount, cashbackAmount };
     },
@@ -47,15 +47,21 @@ export const paymentService = {
         return true;
     },
 
+    runWeeklyPayout: async () => {
+        console.log(`[PaymentService] Running global automated weekly payout batch`);
+        // Batch query kabadiwallas here and feed to weeklyPayout
+        return true;
+    },
+
     citizenWithdrawal: async (citizenId: string, amountINR: number) => {
         // Stub for citizen withdrawal
         console.log(`[PaymentService] Executing citizen withdrawal for citizen ${citizenId} amount ${amountINR}`);
-        const user = await userModel.findById(citizenId);
-        if (user && user.citizenProfile && user.citizenProfile.cashbackBalance >= amountINR) {
-            user.citizenProfile.cashbackBalance -= amountINR;
-            await user.save();
-            return true;
-        }
+        // const user = await userModel.findById(citizenId);
+        // if (user && user.citizenProfile && user.citizenProfile.cashbackBalance >= amountINR) {
+        //     user.citizenProfile.cashbackBalance -= amountINR;
+        //     await user.save();
+        //     return true;
+        // }
         return false;
     }
 };

@@ -1,26 +1,17 @@
-import express from "express";
-import multer from "multer";
-import { createTypeController, getAllReports, updateReportStatus } from "../controller/WasteType.Controller.js";
-import authMiddleware from "../middleware/auth.middleware.js";
+import { Router } from 'express';
+import { createReport, getMyReports, getReport, getReportsByArea, getReportsByStatus, updateReportStatus } from '../controller/report.controller';
+import { authenticate } from '../middleware/authenticate';
+import { authorize } from '../middleware/authorize';
+import { processImageUpload, uploadImageMiddleware } from '../middleware/uploadImage';
 
-const upload = multer({ storage: multer.memoryStorage() });
+const router = Router();
+router.use(authenticate);
 
-const router = express.Router();
-
-router.post('/image',
-    authMiddleware,
-    upload.single('image'),
-    createTypeController
-);
-
-router.get('/list',
-    authMiddleware,
-    getAllReports
-);
-
-router.patch('/:id/status',
-    authMiddleware,
-    updateReportStatus
-);
+router.post('/', uploadImageMiddleware, processImageUpload, createReport);
+router.get('/', getMyReports);
+router.get('/filter/status', getReportsByStatus);
+router.get('/area/:pincode', getReportsByArea);
+router.get('/:id', getReport);
+router.patch('/:id/status', authorize('admin', 'municipality'), updateReportStatus);
 
 export default router;

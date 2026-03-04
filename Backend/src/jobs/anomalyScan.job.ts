@@ -1,6 +1,6 @@
 import cron from 'node-cron';
 import { anomalyInvestigatorAgent } from '../agents/anomalyInvestigator.agent.js';
-import InvestigationModel from '../models/investigation.model.js';
+import InvestigationModel from '../models/Investigation.model.js';
 
 export const startAnomalyScanJob = () => {
     // Run at 2 AM every day

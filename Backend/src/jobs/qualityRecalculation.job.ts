@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import userModel from '../models/user.model.js';
+import { UserModel as userModel } from '../models/User.model';
 
 export const startQualityRecalculationJob = () => {
     // Run at 3 AM every day
@@ -15,7 +15,7 @@ export const startQualityRecalculationJob = () => {
             }
 
             // Find all active kabadiwallas
-            const kabadiwallas = await userModel.find({ role: 'green_champion' });
+            const kabadiwallas = await userModel.find({ role: 'kabadiwalla' });
             for (const kb of kabadiwallas) {
                 // await qualityScoreService.updateKabadiwalaScore(kb._id.toString());
             }
