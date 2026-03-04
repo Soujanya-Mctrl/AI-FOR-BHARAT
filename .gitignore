@@ -44,3 +44,4 @@ app-example
 
 .agents
 .env
+service-account.json

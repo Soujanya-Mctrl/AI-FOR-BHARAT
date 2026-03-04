@@ -1,22 +1,36 @@
+import { apiKey } from "@better-auth/api-key";
 import { expo } from "@better-auth/expo";
+import { dash } from "@better-auth/infra";
 import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
-import mongoose from "mongoose";
 
-// We need an underlying MongoClient instance for the MongoDB adapter
-const getDb = () => {
-    // Depending on when this is called, mongoose.connection may not be ready
-    // So we access the client only when methods are invoked
-    if (mongoose.connection.readyState !== 1) {
-        throw new Error("Database not connected yet");
-    }
-    const db = mongoose.connection.db;
-    if (!db) throw new Error("Database instance is null");
-    return db;
-};
+import { MongoClient } from "mongodb";
+
+const client = new MongoClient(process.env.MONGODB_URI || "mongodb://localhost:27017/ecowaste");
+const db = client.db();
 
 export const auth = betterAuth({
-    database: mongodbAdapter(mongoose.connection.getClient().db() as unknown as import("mongodb").Db),
+    database: mongodbAdapter(db),
+    model: {
+        user: {
+            table: "users"
+        }
+    },
+    databaseHooks: {
+        user: {
+            create: {
+                before: async (user) => {
+                    return {
+                        data: {
+                            ...user,
+                            username: user.username || `${user.email.split('@')[0]}_${Math.floor(Math.random() * 1000)}`,
+                            role: user.role || "user",
+                        }
+                    };
+                }
+            }
+        }
+    },
     emailAndPassword: {
         enabled: true,
     },
@@ -28,6 +42,10 @@ export const auth = betterAuth({
     },
     plugins: [
         expo(),
+        apiKey(),
+        dash({
+            apiKey: process.env.BETTER_AUTH_API_KEY
+        }),
     ],
     trustedOrigins: [
         "ecowaste://",

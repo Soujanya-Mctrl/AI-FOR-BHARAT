@@ -25,5 +25,6 @@ Thumbs.db
 
 # Credentials
 credentials.json
+service-account.json
 *.pem
 *.key

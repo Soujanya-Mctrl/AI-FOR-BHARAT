@@ -7,24 +7,14 @@ import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
 
 export default function RegisterScreen() {
-    const { register } = useAuth();
+    const { register, loginWithGoogle } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
 
     const handleRegister = async (data: { username: string; email: string; password: string; role: string }) => {
         setIsLoading(true);
         try {
-            const { authClient } = require('@/services/betterAuth');
-            const { data: signUpData, error } = await authClient.signUp.email({
-                email: data.email,
-                password: data.password,
-                name: data.username,
-                // We map custom fields into the additionalFields we defined in backend
-                role: data.role,
-            });
-            if (error) {
-                console.error("Register Error", error);
-                return;
-            }
+            await register(data.username, data.email, data.password, data.role);
+
             // After successful sign in with better-auth, hydrate the global store
             const { useAuthStore } = require('@/stores/authStore');
             await useAuthStore.getState().hydrateFromStorage();
@@ -34,6 +24,8 @@ export default function RegisterScreen() {
             } else {
                 router.replace('/(auth)/onboarding');
             }
+        } catch (error) {
+            console.error("Register Error", error);
         } finally {
             setIsLoading(false);
         }
@@ -42,11 +34,7 @@ export default function RegisterScreen() {
     const handleGoogleLogin = async () => {
         setIsLoading(true);
         try {
-            const { authClient } = require('@/services/betterAuth');
-            await authClient.signIn.social({
-                provider: "google",
-                callbackURL: "ecowaste://",
-            });
+            await loginWithGoogle();
         } catch (error) {
             console.error("Google Login Error", error);
         } finally {

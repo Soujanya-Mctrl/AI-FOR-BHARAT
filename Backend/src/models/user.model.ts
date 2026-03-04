@@ -1,9 +1,12 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Document, Schema } from "mongoose";
 
 export interface IUser extends Document {
-    username: string;
+    username?: string;
+    name?: string;
     email: string;
-    password: string;
+    emailVerified?: boolean;
+    image?: string;
+    password?: string;
     points: number;
     role: 'user' | 'green_champion' | 'admin';
     createdAt: Date;
@@ -13,11 +16,15 @@ export interface IUser extends Document {
 const userSchema: Schema = new Schema({
     username: {
         type: String,
-        required: true,
+        required: false,
         unique: true,
         trim: true,
         minlength: 3,
         maxlength: 30
+    },
+    name: {
+        type: String,
+        required: false
     },
     email: {
         type: String,
@@ -26,9 +33,18 @@ const userSchema: Schema = new Schema({
         lowercase: true,
         trim: true
     },
+    emailVerified: {
+        type: Boolean,
+        required: false,
+        default: false
+    },
+    image: {
+        type: String,
+        required: false
+    },
     password: {
         type: String,
-        required: true,
+        required: false,
         minlength: 8
     },
     points: {

@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
-import Facility from "../models/Facilities.model";
-import authMiddleware from "../middleware/auth.middleware";
+import authMiddleware from "../middleware/auth.middleware.js";
+import Facility from "../models/Facilities.model.js";
 
 const router = express.Router();
 

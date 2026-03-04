@@ -1,10 +1,11 @@
 import express from 'express';
 // @ts-ignore
 import cookieParser from "cookie-parser";
-import facilitiesRouter from "./routes/facilities.routes";
-import reportRouter from "./routes/report.routes";
-import rewardsRouter from "./routes/rewards.routes";
-import userRouter from "./routes/user.routes";
+import facilitiesRouter from "./routes/facilities.routes.js";
+import pickupRouter from "./routes/pickup.routes.js";
+import reportRouter from "./routes/report.routes.js";
+import rewardsRouter from "./routes/rewards.routes.js";
+import userRouter from "./routes/user.routes.js";
 // @ts-ignore
 import cors from "cors";
 
@@ -21,15 +22,11 @@ app.use('/', userRouter);
 app.use('/report', reportRouter);
 app.use('/facilities', facilitiesRouter);
 app.use('/api', rewardsRouter);
+app.use('/api/pickups', pickupRouter);
 
 import { toNodeHandler } from 'better-auth/node';
-import { auth } from './auth';
+import { auth } from './auth.js';
 
-app.all("/api/auth/*", (req, res, next) => {
-    // Workaround for toNodeHandler async expectations
-    toNodeHandler(auth)(req, res).then(() => {
-        // usually handled by Better Auth
-    }).catch(next);
-});
+app.all("/api/auth/*splat", toNodeHandler(auth));
 
 export default app;

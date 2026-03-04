@@ -1,7 +1,7 @@
 import express from "express";
-import authMiddleware from "../middleware/auth.middleware";
-import { createTypeController, getAllReports, updateReportStatus } from "../controller/WasteType.Controller";
 import multer from "multer";
+import { createTypeController, getAllReports, updateReportStatus } from "../controller/WasteType.Controller.js";
+import authMiddleware from "../middleware/auth.middleware.js";
 
 const upload = multer({ storage: multer.memoryStorage() });
 

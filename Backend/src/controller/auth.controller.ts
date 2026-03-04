@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import jwt from "jsonwebtoken";
 // @ts-ignore
 import bcrypt from "bcryptjs";
-import userModel, { IUser } from "../models/user.model";
+import userModel from "../models/user.model.js";
 
 export async function registerController(req: Request, res: Response): Promise<void> {
     try {
