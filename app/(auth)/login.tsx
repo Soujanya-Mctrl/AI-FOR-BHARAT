@@ -1,5 +1,6 @@
 import { LoginForm } from '@/components/forms/LoginForm';
 import { Colors } from '@/constants/colors';
+import { useAuth } from '@/hooks/useAuth';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
@@ -8,18 +9,13 @@ import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } fro
 export default function LoginScreen() {
     const [isLoading, setIsLoading] = useState(false);
 
+    const { login, loginWithGoogle } = useAuth();
+
     const handleLogin = async (data: { email: string; password: string }) => {
         setIsLoading(true);
         try {
-            const { authClient } = require('@/services/betterAuth');
-            const { data: signInData, error } = await authClient.signIn.email({
-                email: data.email,
-                password: data.password
-            });
-            if (error) {
-                console.error("Login fell back to error", error);
-                return;
-            }
+            await login(data.email, data.password);
+
             // After successful sign in with better-auth, hydrate the global store
             const { useAuthStore } = require('@/stores/authStore');
             await useAuthStore.getState().hydrateFromStorage();
@@ -32,6 +28,8 @@ export default function LoginScreen() {
                 case 'admin': router.replace('/(admin)'); break;
                 default: router.replace('/(citizen)'); break;
             }
+        } catch (error) {
+            console.error("Login Error", error);
         } finally {
             setIsLoading(false);
         }
@@ -40,13 +38,7 @@ export default function LoginScreen() {
     const handleGoogleLogin = async () => {
         setIsLoading(true);
         try {
-            const { authClient } = require('@/services/betterAuth');
-            await authClient.signIn.social({
-                provider: "google",
-                callbackURL: "ecowaste://", // Returns to the app via our defined scheme
-            });
-            // Upon return, hydration in _layout handles the redirect 
-            // since the token is stored securely by the expo plugin
+            await loginWithGoogle();
         } catch (error) {
             console.error("Google Login Error", error);
         } finally {

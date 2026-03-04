@@ -25,11 +25,6 @@ app.use('/api', rewardsRouter);
 import { toNodeHandler } from 'better-auth/node';
 import { auth } from './auth';
 
-app.all("/api/auth/*", (req, res, next) => {
-    // Workaround for toNodeHandler async expectations
-    toNodeHandler(auth)(req, res).then(() => {
-        // usually handled by Better Auth
-    }).catch(next);
-});
+app.all("/api/auth/*", toNodeHandler(auth));
 
 export default app;

@@ -1,8 +1,8 @@
-import { authService } from '@/services/auth.service';
+import { authClient } from '@/services/betterAuth';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
 import { User } from '@/types/user.types';
-import { removeItem, setItem, StorageKeys } from '@/utils/storage';
+import { removeItem, StorageKeys } from '@/utils/storage';
 import { router } from 'expo-router';
 import { useCallback } from 'react';
 
@@ -14,15 +14,19 @@ export function useAuth() {
 
     const login = useCallback(async (email: string, password: string) => {
         try {
-            const data = await authService.login(email, password);
-            const jwt = data.jwt || '';
-            if (jwt) {
-                await setItem(StorageKeys.JWT, jwt);
+            const { data, error } = await authClient.signIn.email({
+                email,
+                password,
+            });
+            if (error) {
+                throw new Error(error.message || 'Login failed');
             }
-            setAuth(data.user as unknown as User);
+            if (data?.user) {
+                setAuth(data.user as unknown as User);
+            }
             return data;
         } catch (error: any) {
-            const msg = error.response?.data?.message || 'Login failed';
+            const msg = error.message || 'Login failed';
             showToast(msg, 'error');
             throw error;
         }
@@ -35,29 +39,57 @@ export function useAuth() {
         userRole: string
     ) => {
         try {
-            const data = await authService.register(username, email, password, userRole);
-            const jwt = data.jwt || '';
-            if (jwt) {
-                await setItem(StorageKeys.JWT, jwt);
+            const { data, error } = await authClient.signUp.email({
+                email,
+                password,
+                name: username,
+                role: userRole,
+            } as any);
+            if (error) {
+                throw new Error(error.message || 'Registration failed');
             }
-            setAuth(data.user as unknown as User);
+            if (data?.user) {
+                setAuth(data.user as unknown as User);
+            }
             return data;
         } catch (error: any) {
-            const msg = error.response?.data?.message || 'Registration failed';
+            const msg = error.message || 'Registration failed';
             showToast(msg, 'error');
             throw error;
         }
     }, [setAuth, showToast]);
 
+    const loginWithGoogle = useCallback(async () => {
+        try {
+            const { data, error } = await authClient.signIn.social({
+                provider: "google",
+                callbackURL: "ecowaste://",
+            });
+            if (error) {
+                throw new Error(error.message || 'Google login failed');
+            }
+            // `data` here might contain the user if signed in instantly, or Better Auth might redirect via Expo's WebBrowser
+        } catch (error: any) {
+            const msg = error.message || 'Google login failed';
+            showToast(msg, 'error');
+            throw error;
+        }
+    }, [showToast]);
+
     const logout = useCallback(async () => {
         try {
-            await authService.logout();
+            const { error } = await authClient.signOut();
+            if (error) {
+                throw new Error(error.message);
+            }
+        } catch (error: any) {
+            showToast(error.message || 'Logout failed', 'error');
         } finally {
             clearAuth();
             await removeItem(StorageKeys.JWT);
             router.replace('/(auth)/login');
         }
-    }, [clearAuth]);
+    }, [clearAuth, showToast]);
 
     return {
         user,
@@ -66,6 +98,8 @@ export function useAuth() {
         role,
         login,
         register,
+        loginWithGoogle,
         logout,
     };
 }
+
