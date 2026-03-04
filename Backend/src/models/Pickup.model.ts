@@ -27,7 +27,7 @@ export interface IPickup extends Document {
         anomalyFlags: string[];
         processedAt: Date;
     };
-    paymentStatus: 'pending' | 'released' | 'withheld' | 'failed';
+    paymentStatus: 'pending' | 'partial' | 'released' | 'withheld' | 'failed';
     paymentAmount?: number;
     cashbackAmount?: number;
     cancelReason?: string;
@@ -71,7 +71,7 @@ const pickupSchema: Schema = new Schema({
     },
     paymentStatus: {
         type: String,
-        enum: ['pending', 'released', 'withheld', 'failed'],
+        enum: ['pending', 'partial', 'released', 'withheld', 'failed'],
         default: 'pending'
     },
     paymentAmount: { type: Number },

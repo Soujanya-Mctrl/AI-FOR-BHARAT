@@ -8,6 +8,23 @@ export interface IUser extends Document {
     image?: string;
     password?: string;
     points: number;
+    reliabilityScore: number;
+    monitoringLevel: 'standard' | 'enhanced' | 'strict';
+    monitoringExpiresAt?: Date;
+    currentStreak: number;
+    longestStreak: number;
+    citizenProfile?: {
+        segregationScore: number;
+        cashbackBalance: number;
+    };
+    kabadiwalaProfile?: {
+        accuracyScore: number;
+        isSuspended: boolean;
+        suspendReason?: string;
+        isBanned: boolean;
+        banReason?: string;
+        banEvidence?: string[];
+    };
     role: 'user' | 'green_champion' | 'admin';
     createdAt: Date;
     updatedAt: Date;
@@ -51,6 +68,23 @@ const userSchema: Schema = new Schema({
         type: Number,
         default: 0,
         min: 0
+    },
+    reliabilityScore: { type: Number, default: 100, min: 0, max: 100 },
+    monitoringLevel: { type: String, enum: ['standard', 'enhanced', 'strict'], default: 'standard' },
+    monitoringExpiresAt: { type: Date },
+    currentStreak: { type: Number, default: 0 },
+    longestStreak: { type: Number, default: 0 },
+    citizenProfile: {
+        segregationScore: { type: Number, default: 100, min: 0, max: 100 },
+        cashbackBalance: { type: Number, default: 0, min: 0 }
+    },
+    kabadiwalaProfile: {
+        accuracyScore: { type: Number, default: 100, min: 0, max: 100 },
+        isSuspended: { type: Boolean, default: false },
+        suspendReason: { type: String },
+        isBanned: { type: Boolean, default: false },
+        banReason: { type: String },
+        banEvidence: [{ type: String }]
     },
     role: {
         type: String,
