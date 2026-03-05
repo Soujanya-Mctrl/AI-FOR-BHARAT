@@ -5,7 +5,7 @@ import { ApiError } from '../utils/ApiError';
 export const authenticate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const session = await auth.api.getSession({
-            headers: req.headers
+            headers: new Headers(req.headers as any)
         });
 
         if (!session) {
