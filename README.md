@@ -2,9 +2,7 @@
 
 **Fixing India's broken waste accountability loop — one GPS-verified pickup at a time.**
 
-India generates 62 million tonnes of waste per year. Only 11.9 million tonnes gets processed correctly. The problem isn't awareness — it's accountability. Citizens report, nothing happens, they stop. Kabadiwallas have no reliable income or routing. Municipalities have no real-time data.
-
-EcoWaste closes this loop with a **dual-GPS verification system**: citizens request pickups, kabadiwallas confirm quality on-site, and both GPS signals are cross-referenced automatically. No human review layer. Correct segregation earns cashback. Fraud is statistically detectable.
+EcoWaste is a two-sided marketplace connecting citizens to kabadiwallas. Citizens segregate waste correctly, photograph it, and schedule a pickup. Kabadiwallas confirm the pickup on-site with GPS auto-captured. The cross-reference engine compares both GPS streams, checks dwell time, and validates rating patterns to generate a trust score automatically. Above 70 — payment releases. Below 70 — flagged for the anomaly agent. Four Gemini agents handle coaching, fraud investigation, route optimisation, and municipality briefings. Municipalities get a compliance dashboard with verified ward-level data. The only human touchpoint is an admin reviewing high-confidence suspension cases. Everything else is automated.
 
 ---
 
@@ -61,10 +59,12 @@ Currently, the frontend MVP is structurally complete, and the core backend is bu
 - Dual-GPS Verification engine built (Calculates composite Trust Score based on distance, dwell time, and ratings)
 - Offline support and syncing logic implemented
 
-**Backend (API)**: Core built, pickup routes pending
+**Backend (API)**: Trust Engine & Agents Installed
 - **Auth, Reports, Facilities, Rewards**: Fully functional with MongoDB and JWT
-- **AI Classification**: Integrated with Google Gemini API
-- **Pickup Verification**: Pending. The frontend has the Trust Engine logic ready, but the backend requires new CRUD routes (`/api/pickups/*`) to handle pickup requests, confirmations, and the cross-referencing for the final Trust Score validation.
+- **AI Classification**: Integrated with Google Gemini 2.5 Flash
+- **Trust Engine Built**: Dual-GPS pickup algorithm completed via `crossReference.service.ts` checking dwell times, proximity and ratings automatically.
+- **AI Agent Layers**: Segregation Coach, Anomaly Investigator, Route Optimizer, and Municipality Briefing agents are live.
+- **Scheduled Jobs**: Nightly trust score recalculations, weekly payout batches, and ward briefing emails running via `node-cron`.
 - **Media Hosting**: The app expects **Cloudinary** for hosting the Citizen segregation training videos and waste report image uploads (currently the backend uses local memory/disk storage).
 - **Maps**: Missing Google Maps API Key integration in the map views.
 
@@ -168,9 +168,11 @@ EcoWaste/
 │       ├── controller/           # auth, wasteType (AI), rewards
 │       ├── db/                   # MongoDB connection
 │       ├── middleware/           # JWT auth middleware
-│       ├── models/               # User, Report, Facilities (Mongoose schemas)
-│       ├── routes/               # auth, report, facilities, rewards
-│       └── service/              # AI service (Gemini integration)
+│       ├── models/               # Profile schemas, pickups, investigations, anomalyFlags
+│       ├── routes/               # Express endpoints
+│       ├── service/              # Logic for payments, push-notifications, trust-score algorithms
+│       ├── agents/               # Gemini AI workflows (Coaching, Briefings, Routing, Fraud Analysis)
+│       └── jobs/                 # Cron triggers (Payouts, Midnight recalculations)
 │
 ├── assets/                       # Images, icons, splash screens
 ├── app.json                      # Expo config (permissions, plugins)
