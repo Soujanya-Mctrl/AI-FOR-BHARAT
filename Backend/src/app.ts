@@ -1,6 +1,7 @@
 // Express app setup: middleware chain, route mounting, error handler
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import crypto from 'crypto';
 import express, { NextFunction, Request, Response } from 'express';
 import { generalLimiter } from './middleware/rateLimiter';
 import { sanitizeMongoDB, sanitizeXSS } from './middleware/sanitize';
@@ -11,6 +12,17 @@ import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth";
 
 const app = express();
+
+// Express 5 query getter override for middleware compatibility (xss-clean, mongo-sanitize)
+app.use((req: Request, res: Response, next: NextFunction) => {
+    let expressQuery = req.query;
+    Object.defineProperty(req, 'query', {
+        get: () => expressQuery,
+        set: (val) => { expressQuery = val; },
+        configurable: true
+    });
+    next();
+});
 
 // Better Auth Handler
 app.all("/api/v1/auth/*path", toNodeHandler(auth));
@@ -56,6 +68,8 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     const statusCode = err.statusCode || 500;
     const message = err.message || 'Internal Server Error';
 
+    console.error('ERROR STACK TRACE:', err.stack);
+
     res.status(statusCode).json({
         success: false,
         error: {
@@ -63,7 +77,7 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
             message,
             details: err.details || undefined
         },
-        requestId: require('crypto').randomUUID(),
+        requestId: crypto.randomUUID(),
         timestamp: new Date().toISOString()
     });
 });

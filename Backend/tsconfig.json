@@ -3,6 +3,9 @@
     "target": "es2022",
     "module": "commonjs",
     "moduleResolution": "node",
+    "typeRoots": [
+      "./node_modules/@types"
+    ],
     "baseUrl": ".",
     "paths": {
       "@/*": [
